@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OMFS Registry</title>
+<meta name="theme-color" content="#0f766e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="OMFS Registry">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  html, body { margin: 0; height: 100%; background: #f4f6f8; overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: #f4f6f8; }
+  #menuBtn { position: fixed; left: 8px; bottom: 64px; z-index: 10; width: 34px; height: 34px;
+    border-radius: 50%; border: 1px solid #dde3ea; background: rgba(255,255,255,.9); color: #0f766e;
+    font-size: 18px; line-height: 30px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.12); padding: 0; }
+  #menu { position: fixed; left: 8px; bottom: 106px; z-index: 10; background: #fff; border: 1px solid #dde3ea;
+    border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.15); padding: 6px; display: none; min-width: 220px; }
+  #menu.open { display: block; }
+  #menu button, #menu a { display: block; width: 100%; text-align: left; border: 0; background: none;
+    font: inherit; font-size: 14px; padding: 10px 12px; border-radius: 6px; color: #1c2530; text-decoration: none; cursor: pointer; }
+  #menu button:hover, #menu a:hover { background: #e3f3f1; }
+  #menu small { display: block; color: #667383; font-size: 12px; padding: 4px 12px 8px; }
+</style>
+</head>
+<body>
+<!-- ============================================================
+     PASTE YOUR WEB APP LINK BELOW (the one ending in /exec)
+     ============================================================ -->
+<script>
+  var APP_URL = "PASTE_YOUR_EXEC_LINK_HERE";
+</script>
+
+<iframe id="app" title="OMFS Registry" allow="clipboard-read; clipboard-write"></iframe>
+
+<button id="menuBtn" type="button" title="Menu">⋯</button>
+<div id="menu">
+  <button type="button" id="mReload">↻ Muat semula</button>
+  <a id="mLogin" href="#" target="_blank" rel="noopener">🔑 Log masuk Google</a>
+  <small>Jika skrin kosong: log masuk dengan akaun moh.gov.my, kemudian kembali ke sini dan tekan Muat semula.</small>
+</div>
+
+<script>
+  var frame = document.getElementById("app");
+  frame.src = APP_URL;
+  document.getElementById("mLogin").href =
+    "https://accounts.google.com/ServiceLogin?continue=" + encodeURIComponent(APP_URL);
+  var menu = document.getElementById("menu");
+  document.getElementById("menuBtn").onclick = function () { menu.classList.toggle("open"); };
+  document.getElementById("mReload").onclick = function () {
+    menu.classList.remove("open");
+    frame.src = "about:blank";
+    setTimeout(function () { frame.src = APP_URL; }, 50);
+  };
+  // coming back to the app after logging in → reload automatically
+  var hiddenAt = 0;
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) { hiddenAt = Date.now(); return; }
+    if (sessionStorage.getItem("wentToLogin") && Date.now() - hiddenAt > 2000) {
+      sessionStorage.removeItem("wentToLogin");
+      document.getElementById("mReload").onclick();
+    }
+  });
+  document.getElementById("mLogin").addEventListener("click", function () {
+    try { sessionStorage.setItem("wentToLogin", "1"); } catch (e) {}
+    menu.classList.remove("open");
+  });
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function () {});
+</script>
+</body>
+</html>
